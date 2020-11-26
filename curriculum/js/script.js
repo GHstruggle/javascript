@@ -1,26 +1,8 @@
 "use strict"
-
-//获取元素
-const divDom = window.Gzong.$('table-data-wrap');
-
-// 创建元素
-const tableDom = window.Gzong.creatEle('table');
-
-// 隐藏显示
-let  addInfoButton = window.Gzong.getClassName('add-info-button')[0];
-let infoDialog = window.Gzong.$('info-dialog');
-
-//头像事件
-let faceView = document.querySelector('.face-view')
-let faceViewList = document.querySelector('.face-view-list')
-
 //设置表头属性
 window.Gzong.setAttr(tableDom, styles);
-
 //获取属性
-let a = window.Gzong.getAttr(tableDom, 'id'); 
-
-
+const a = window.Gzong.getAttr(tableDom, 'id'); 
 
 //表头数据拼接
 function theadJoinData (data) {
@@ -33,11 +15,8 @@ function theadJoinData (data) {
         theadHtml += '</tr></thead>';
         return theadHtml;
 }
-
-
 // 表头+主题数据，拼接进table
 tableDom.innerHTML = theadJoinData(tableTheadData)+creatTbodyData();
-
 // 把table追加为divDom子元素
 divDom.appendChild(tableDom);
 
@@ -68,26 +47,54 @@ window.Gzong.addEvent(faceView, 'click', function(){
 })
 
 window.Gzong.addEvent(faceViewList, 'click', function(e){
-    let nodeName = e.target.nodeName.toLowerCase();
+
+    // 获取目标元素
+    const nodeName = e.target.nodeName.toLowerCase();
+    // 获取img对象昂
+    const getImg = window.Gzong.getTagName(faceView ,'img')
     // 创建img元素
-    let imgHTML = window.Gzong.creatEle('img'); 
+    const imgHTML = window.Gzong.creatEle('img'); 
+
+    //删除之前高亮
+    if(faceSave){
+        faceSave.classList.remove('active');
+    }
+
+    //判断目标元素img
+    let imgSrc = ''; 
     if (nodeName == 'img') {
-        imgHTML.src = e.target.src; //当前目标的src属性
+        imgSrc = e.target.src; //当前目标的src属性
+        faceSave = e.target.parentNode;
     }
+    //判断目标元素li
     if (nodeName == 'li'){
-        let imgSrc = window.Gzong.getTagName(e.target, 'img')[0].src;
-        imgHTML.src = imgSrc;
+        let src = window.Gzong.getTagName(e.target, 'img')[0].src;
+        imgSrc = src;
+        faceSave = e.target
     }
-    window.Gzong.addChild(faceView, imgHTML);
+    
+    // 当前添加高亮
+    faceSave.classList.add('active')
+
+    //更新头像
+    faceUpdate({
+        getImg,
+        imgHTML,
+        imgSrc
+    });
+    
 })
 
 
-// 执行请求接口后自动执行该方法，拿到请求数据
-function handlerFaceListCallback(data){
-    let res = data.data;
-    let img = ''
-    for (const key of res) {
-        img += `<li><img src="${key}"alt=""></li>`
-    }
-    faceViewList.innerHTML = img;
-}
+// 删除头像
+window.Gzong.addEvent(faceDelButton, 'click', function(e){
+    const ev = e || window.event;
+    // 获取img对象
+    const getImg = window.Gzong.getTagName(faceView, 'img')[0]
+    //删除父级小面的子对象
+    getImg && delFace(faceView, getImg)
+    // 阻止事件冒泡
+    ev.stopPropagation() || (ev.cancelBubble=true);
+})
+
+
